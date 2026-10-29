@@ -430,6 +430,27 @@ var wpforms_settings = {"val_required":"This field is required.","val_email":"Pl
 
     const button = form.querySelector('button[type="submit"], input[type="submit"], button:not([type])');
     const oldLabel = "Send Message";
+
+const keepSendMessageLabel = () => {
+  const b = form.querySelector(
+    'button[type="submit"], input[type="submit"], button:not([type])'
+  );
+  if (!b) return;
+  if (b.tagName === "INPUT") {
+    if (b.value !== "Send Message") b.value = "Send Message";
+  } else if (b.textContent.trim() !== "Send Message") {
+    b.textContent = "Send Message";
+  }
+};
+if (window.MutationObserver) {
+  const labelObserver = new MutationObserver(keepSendMessageLabel);
+  labelObserver.observe(form, {
+    childList: true, subtree: true, characterData: true, attributes: true,
+    attributeFilter: ["value"]
+  });
+  keepSendMessageLabel();
+}
+
     if (button) button.disabled = true;
     status.textContent = "Sending your message…";
 
