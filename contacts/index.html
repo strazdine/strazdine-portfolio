@@ -429,7 +429,7 @@ var wpforms_settings = {"val_required":"This field is required.","val_email":"Pl
     }
 
     const button = form.querySelector('button[type="submit"], input[type="submit"], button:not([type])');
-    const oldLabel = button ? (button.value || button.textContent) : "";
+    const oldLabel = "Send Message";
     if (button) button.disabled = true;
     status.textContent = "Sending your message…";
 
