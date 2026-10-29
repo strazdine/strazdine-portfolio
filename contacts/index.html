@@ -390,5 +390,70 @@ var wpforms_settings = {"val_required":"This field is required.","val_email":"Pl
 /* ]]> */
 </script>
 
+
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@5/dist/email.min.js"></script>
+<script>
+(function () {
+  emailjs.init({ publicKey: "8UNOjJCHaGvaBu6EL" });
+  const form = document.querySelector("#wpforms-form-250");
+  if (!form) return;
+
+  const status = document.createElement("p");
+  status.setAttribute("role", "status");
+  status.setAttribute("aria-live", "polite");
+  status.style.marginTop = "1rem";
+  form.insertAdjacentElement("afterend", status);
+
+  function describe(el) {
+    const labels = el.labels ? Array.from(el.labels).map(x => x.textContent).join(" ") : "";
+    return [el.name, el.id, el.placeholder, el.getAttribute("aria-label"), labels,
+      el.closest("label") ? el.closest("label").textContent : ""].join(" ").toLowerCase();
+  }
+
+  form.addEventListener("submit", async function (event) {
+    event.preventDefault();
+    const controls = Array.from(form.querySelectorAll("input, textarea, select"))
+      .filter(el => !["submit", "button", "hidden", "reset"].includes((el.type || "").toLowerCase()));
+
+    const nameField = controls.find(el => /(name|full name|your name)/.test(describe(el)))
+      || controls.find(el => el.type === "text");
+    const emailField = controls.find(el => el.type === "email")
+      || controls.find(el => /email/.test(describe(el)));
+    const projectField = controls.find(el => /(project|message|details|brief|description)/.test(describe(el)))
+      || controls.find(el => el.tagName === "TEXTAREA")
+      || controls.filter(el => el !== nameField && el !== emailField).at(-1);
+
+    if (!nameField || !emailField || !projectField) {
+      status.textContent = "Please check the form fields and try again.";
+      return;
+    }
+
+    const button = form.querySelector('button[type="submit"], input[type="submit"], button:not([type])');
+    const oldLabel = button ? (button.value || button.textContent) : "";
+    if (button) button.disabled = true;
+    status.textContent = "Sending your message…";
+
+    try {
+      await emailjs.send("service_4fm2r88", "template_4r06wfj", {
+        name: nameField.value.trim(),
+        email: emailField.value.trim(),
+        project: projectField.value.trim()
+      });
+      form.reset();
+      status.textContent = "Thanks! Your message has been sent successfully.";
+    } catch (error) {
+      console.error("EmailJS submission failed:", error);
+      status.textContent = "Your message couldn't be sent. Please try again or email me directly.";
+    } finally {
+      if (button) {
+        button.disabled = false;
+        if (button.tagName === "INPUT") button.value = oldLabel;
+        else button.textContent = oldLabel;
+      }
+    }
+  });
+})();
+</script>
+
 </body>
 </html>
